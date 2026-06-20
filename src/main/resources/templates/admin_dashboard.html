@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard - CyberShield</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: Arial, sans-serif;
+    background: #0a0a1a;
+    color: white;
+    padding: 30px;
+  }
+  .header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(99,102,241,0.3);
+  }
+  h1 { color: #6366f1; font-size: 28px; }
+  .stats {
+    display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap;
+  }
+  .stat-card {
+    background: rgba(99,102,241,0.1);
+    border: 1px solid rgba(99,102,241,0.3);
+    border-radius: 12px; padding: 20px;
+    min-width: 150px; text-align: center;
+  }
+  .stat-card h2 { font-size: 36px; color: #6366f1; }
+  .stat-card p { font-size: 13px; color: rgba(255,255,255,0.6); }
+  table {
+    width: 100%; border-collapse: collapse;
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px; overflow: hidden;
+  }
+  th {
+    background: rgba(99,102,241,0.2);
+    padding: 14px; text-align: left;
+    font-size: 13px; color: #a5b4fc;
+  }
+  td {
+    padding: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 13px; color: rgba(255,255,255,0.8);
+  }
+  tr:hover { background: rgba(99,102,241,0.05); }
+  .badge {
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+  }
+  .badge-pending { background: rgba(255,165,0,0.2); color: orange; }
+  .badge-progress { background: rgba(99,102,241,0.2); color: #a5b4fc; }
+  .badge-resolved { background: rgba(34,197,94,0.2); color: #4ade80; }
+  .btn-update {
+    padding: 6px 12px; border-radius: 6px;
+    background: #6366f1; color: white;
+    border: none; cursor: pointer; font-size: 12px;
+    margin-right: 5px;
+  }
+  .btn-delete {
+    padding: 6px 12px; border-radius: 6px;
+    background: rgba(255,80,80,0.3); color: #ff8080;
+    border: 1px solid rgba(255,80,80,0.3); cursor: pointer; font-size: 12px;
+  }
+  select {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white; padding: 5px 8px;
+    border-radius: 6px; font-size: 12px;
+    margin-right: 5px;
+  }
+  select option { background: #1a1a3e; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🛡️ CyberShield Admin Dashboard</h1>
+  <a href="/admin" style="color: rgba(255,255,255,0.6); font-size: 13px; text-decoration: none;">Logout</a>
+</div>
+
+<div class="stats">
+  <div class="stat-card">
+    <h2 th:text="${reports.size()}">0</h2>
+    <p>Total Reports</p>
+  </div>
+  <div class="stat-card">
+    <h2 th:text="${reports.?[status == 'Pending'].size()}">0</h2>
+    <p>Pending</p>
+  </div>
+  <div class="stat-card">
+    <h2 th:text="${reports.?[status == 'Resolved'].size()}">0</h2>
+    <p>Resolved</p>
+  </div>
+</div>
+
+<table>
+  <tr>
+    <th>#</th>
+    <th>Name</th>
+    <th>Incident Type</th>
+    <th>Platform</th>
+    <th>Details</th>
+    <th>Status</th>
+    <th>Date</th>
+    <th>Actions</th>
+  </tr>
+  <tr th:each="report : ${reports}">
+    <td th:text="${report.id}"></td>
+    <td th:text="${report.name != null ? report.name : 'Anonymous'}"></td>
+    <td th:text="${report.incidentType}"></td>
+    <td th:text="${report.platform}"></td>
+    <td th:text="${report.details}"></td>
+    <td>
+      <span class="badge"
+        th:classappend="${report.status == 'Pending'} ? 'badge-pending' : (${report.status == 'In Progress'} ? 'badge-progress' : 'badge-resolved')"
+        th:text="${report.status}">
+      </span>
+    </td>
+    <td th:text="${report.createdAt != null ? report.createdAt.toString().substring(0,10) : ''}"></td>
+    <td>
+      <form method="post" th:action="@{/admin/update/{id}(id=${report.id})}" style="display:inline">
+        <select name="status">
+          <option value="Pending">Pending</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Resolved">Resolved</option>
+        </select>
+        <button type="submit" class="btn-update">Update</button>
+      </form>
+      <form method="post" th:action="@{/admin/delete/{id}(id=${report.id})}" style="display:inline">
+        <button type="submit" class="btn-delete" onclick="return confirm('Delete this report?')">Delete</button>
+      </form>
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>
